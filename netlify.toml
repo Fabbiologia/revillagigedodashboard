@@ -1,0 +1,12 @@
+# Netlify Configuration File
+
+[build]
+  # Specify the directory where your built files are located
+  publish = "public" # Replace "public" with your build directory, e.g., "dist" or "build"
+  command = "npm run build" # Replace with your actual build command, if applicable
+
+[[redirects]]
+  # Redirect all traffic to the root path
+  from = "/*"
+  to = "/"
+  status = 200

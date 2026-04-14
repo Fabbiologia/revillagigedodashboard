@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "name": "file209619e44d46",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "NOMBRE": "Revillagigedo",
+        "CAT_DECRET": "PN",
+        "ESTADOS": "S/E",
+        "MUNICIPIOS": "S/M",
+        "REGION": "Península de Baja California y Pacífico Norte"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -115.4714,
+              18.583
+            ],
+            [
+              -115.4714,
+              17.6552
+            ],
+            [
+              -114.517,
+              17.6552
+            ],
+            [
+              -112.2941,
+              17.6552
+            ],
+            [
+              -110.0781,
+              17.6552
+            ],
+            [
+              -110.0781,
+              20.0086
+            ],
+            [
+              -115.4714,
+              20.0086
+            ],
+            [
+              -115.4714,
+              18.583
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

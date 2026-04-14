@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parque Nacional Revillagigedo</title>
+    <link rel="shortcut icon" href="www/faviconCON.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-color: #034f94;
+            --secondary-color: #009da6;
+            --accent-color: #ff9e1f;
+            --text-color: #333;
+            --background-color: #f8fafc;
+            --card-bg-color: #ffffff;
+            --header-height: 70px;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #022d57);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: white;
+            padding: 10px;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            transition: all 0.3s ease;
+        }
+        
+        .tabs button {
+            margin: 8px 12px;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .tabs button:hover {
+            background-color: rgba(3, 79, 148, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .tabs button::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background-color: var(--secondary-color);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .tabs button:hover::after {
+            width: 80%;
+        }
+        
+        .content {
+            display: none;
+            min-height: calc(100vh - var(--header-height));
+            margin: 0;
+            padding: 0;
+        }
+        
+        .content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            min-height: calc(100vh - 120px);
+        }
+        
+        .content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .landing-background {
+            background-image: url("www/background2.png");
+            background-size: cover;
+            background-position: center;
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            position: relative;
+            border-radius: var(--border-radius);
+            margin: 20px 20px 0;
+            overflow: hidden;
+        }
+        
+        .landing-background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
+            z-index: 1;
+        }
+        
+        .landing-background h1 {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .description-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .description-box {
+            width: 90%;
+            max-width: 1200px;
+            background-color: var(--card-bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin: 20px;
+            text-align: justify;
+        }
+        
+        #acknowledgments {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        #acknowledgments img {
+            height: 80px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            filter: grayscale(0.4);
+        }
+        
+        #acknowledgments img:hover {
+            filter: grayscale(0);
+            transform: scale(1.05);
+        }
+        
+        #acknowledgments2 {
+            display: none;
+        }
+        
+        #inicio.active #acknowledgments2 {
+            display: block;
+            margin-top: 40px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        #map {
+            height: 450px;
+            margin: 30px auto;
+            max-width: 1200px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+        
+        /* Bio cards styling */
+        .card-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .bio-card {
+            width: 320px;
+            background-color: var(--card-bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--card-color);
+        }
+        
+        .bio-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .icon-container {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(var(--card-color), 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .icon-container i {
+            font-size: 32px;
+            color: var(--card-color);
+        }
+        
+        .bio-card h3 {
+            margin: 0 0 15px;
+            color: var(--text-color);
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .bio-card p {
+            margin: 0 0 25px;
+            color: #666;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .bio-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--card-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-top: auto;
+        }
+        
+        .bio-button i {
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+        
+        .bio-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .bio-button:hover i {
+            transform: translateX(3px);
+        }
+        
+        /* Common section styling */
+        .section-title {
+            color: var(--primary-color);
+            text-align: center;
+            margin: 40px 0 20px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .info-card {
+            background-color: var(--card-bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--secondary-color), #00c2ce);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 157, 166, 0.3);
+        }
+        
+        /* Book section styling */
+        .book-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .book-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 50px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .book-cover {
+            flex: 0 0 300px;
+        }
+        
+        .book-image {
+            width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .book-image:hover {
+            transform: scale(1.03) rotate(1deg);
+        }
+        
+        .book-info {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+        }
+        
+        .book-title {
+            color: var(--primary-color);
+            font-size: 28px;
+            margin: 0 0 10px;
+            font-weight: 700;
+        }
+        
+        .book-subtitle {
+            color: var(--secondary-color);
+            font-size: 18px;
+            margin: 0 0 25px;
+            font-weight: 500;
+        }
+        
+        .book-description {
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+        
+        .book-download-btn {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        
+        .podcast-card {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+        
+        .podcast-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .podcast-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .podcast-icon {
+            font-size: 36px;
+            color: var(--secondary-color);
+        }
+        
+        .podcast-description {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .audio-container {
+            background-color: rgba(0, 157, 166, 0.05);
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+        
+        .podcast-audio {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .audio-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .audio-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .audio-info i {
+            font-size: 18px;
+            color: var(--secondary-color);
+        }
+        
+        /* Language selector styling */
+        .language-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 2px solid var(--secondary-color);
+            background-color: white;
+            color: var(--secondary-color);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .language-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .language-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .audio-container {
+            display: none;
+        }
+        
+        .active-audio {
+            display: block;
+        }
+        
+        /* Reference section styling */
+        .references-card {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+        
+        .reference-item {
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .reference-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .reference-item p {
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .reference-item strong {
+            color: var(--primary-color);
+        }
+        
+        .reference-item a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .reference-item a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header {
+                font-size: 1.8rem;
+                padding: 15px 10px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: 10px 5px;
+            }
+            
+            .tabs button {
+                margin: 5px 8px;
+                padding: 8px 12px;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+            
+            .landing-background {
+                height: 220px;
+            }
+            
+            .description-box {
+                padding: 20px;
+                margin: 15px;
+            }
+            
+            #map {
+                height: 350px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                font-size: 1.5rem;
+            }
+            
+            .tabs button {
+                font-size: 13px;
+                padding: 6px 10px;
+                margin: 3px 5px;
+            }
+            
+            .landing-background {
+                height: 180px;
+                margin: 10px 10px 0;
+            }
+            
+            .card-container {
+                gap: 20px;
+                padding: 20px 10px;
+            }
+            
+            .bio-card {
+                width: 280px;
+                padding: 20px;
+            }
+            
+            .book-title {
+                font-size: 24px;
+            }
+            
+            .book-subtitle {
+                font-size: 16px;
+            }
+            
+            .references-card {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                font-size: 1.2rem;
+                padding: 10px;
+            }
+            
+            .tabs {
+                padding: 5px;
+            }
+            
+            .tabs button {
+                margin: 2px 3px;
+                padding: 5px 8px;
+                font-size: 12px;
+            }
+            
+            .landing-background {
+                height: 150px;
+            }
+            
+            .bio-card {
+                width: 100%;
+            }
+            
+            .icon-container {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .book-cover {
+                flex: 0 0 250px;
+            }
+            
+            .audio-info {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Parque Nacional Revillagigedo</div>
+    
+    <div class="tabs">
+        <button onclick="showContent('inicio')">Inicio</button>
+        <button onclick="showContent('fishing')">Monitoreo Embarcaciónes</button>
+        <button onclick="showContent('climate')">Cambio Climático</button>
+        <button onclick="showContent('bio')">Monitoreo Biológico</button>
+        <button onclick="showContent('expedition')">Informe de Expedición</button>
+        <button onclick="showContent('research')">Investigación</button>
+        <button onclick="showContent('book')">Libro Area Marina de Revillagigedo</button>
+    </div>
+
+    <div id="inicio" class="content active">
+        <div class="landing-background">
+            <h1></h1>
+        </div>
+        
+        <div id="acknowledgments">
+            <img src="www/government_logos.jpg" alt="Government Logos">
+        </div>
+        
+        <div class="description-container">
+            <div class="description-box">
+                <p style="text-align: justify;">
+                    <strong style="display: block; text-align: center; font-size: 30px;">El Archipiélago de Revillagigedo:</strong><br>
+                    Constituye un conjunto de cuatro islas volcánicas situadas en el Océano Pacífico. Estas son reconocidas por albergar un 
+  ecosistema único y singular. Ubicadas aproximadamente a 458 kilómetros al suroeste del municipio de Los Cabos, Baja 
+  California Sur, y a 698 kilómetros al oeste de Manzanillo, se encuentran en una posición remota y distante. Inicialmente 
+  vinculadas al estado mexicano de Colima, fueron otorgadas en 1861 para establecer una colonia penal, pero actualmente son 
+  propiedad y están bajo jurisdicción federal mexicana.<br><br>
+  Decretado en noviembre de 2017 como Parque Nacional a cargo de la Comisión Nacional de Áreas Naturales Protegidas de
+  México (CONANP), se convirtió en el área marina protegida de no pesca más grande de Norteamérica. Contando con importantes
+  designaciones internacionales, las cuales reafirman la importancia del área:<br>
+  <ul>
+    <li>1996: Área de importancia para la anidación de Aves</li>
+    <li>2002: Humedal de importancia internacional, sitio RAMSAR número: 1357</li>
+    <li>2016: Patrimonio de la Humanidad por la UNESCO</li>
+    <li>2021: Blue Park</li>
+  </ul>
+  El acceso a estas islas desde Los Cabos suele llevar entre 26 y 30 horas por vía marítima, aunque existe una pequeña pista de aterrizaje militar en la Isla Socorro, 
+  la cual es propiedad de la Secretaría de Marina, la cual colabora en el resguardo y vigilancia del área.<br><br>
+  <strong style='display: block; text-align: center; font-size: 20px;'>Importancia de la Colaboración en la Plataforma de Investigación del Parque Nacional Revillagigedo</strong><br>
+La plataforma de investigación del Parque Nacional Revillagigedo es esencial para integrar y coordinar los esfuerzos científicos y de conservación. 
+Esta herramienta permite a los investigadores acceder a datos actualizados, 
+compartir hallazgos y colaborar eficientemente. 
+Al centralizar la información, se facilita el análisis de los impactos ambientales y 
+se mejora la toma de decisiones para la protección del archipiélago.<br><br>
+Descripción de las pestañas en el dashboard<br>
+
+<ul>
+    <li>Monitoreo Embarcaciónes: visualización y análisis de la actividad de embarcaciones de pesca en Revillagigedo, mostrando su distribución espacial y temporal.</li>
+    <li>Cambio Climático: datos y estudios sobre los efectos del cambio climático en el archipiélago.</li>
+    <li>Monitoreo Biológico: información sobre el monitoreo biológico en el Parque Nacional.</li>
+    <li>Informe de Expedición: resúmenes de expediciones científicas con hallazgos clave y recomendaciones para futuras investigaciones.</li>
+    <li>Investigación: acceso a listado de publicaciones, facilitando la colaboración y el intercambio de conocimientos.</li>
+  </ul>
+  <br>
+                </p>
+            </div>
+        </div>
+
+        
+
+        <div id="map"></div>
+
+        <div id="acknowledgments2">
+            <img src="www/LogosBanner.png" alt="Logos ONG" style="width: 100%; max-width: 1200px; height: auto; display: block; margin: 0 auto;">
+        </div>
+    </div>
+
+    <div id="fishing" class="content">
+        <div class="landing-background">
+            <h1></h1>
+        </div>
+        <iframe src="https://datalake-cbmc-revillagigedo.s3.amazonaws.com/revillagigedo_dashboard/vms_revillagigedo_report_es.html"></iframe>
+    </div>
+    <div id="climate" class="content">
+        <div class="landing-background">
+            <h1></h1>
+        </div>
+        <iframe src="static/reports/revillagigedo_report_es.html"></iframe>
+    </div>
+    <div id="bio" class="content">
+        <div class="landing-background">
+            <h1>Monitoreo Biológico</h1>
+        </div>
+        <div class="card-container">
+            <div class="bio-card" style="--card-color: var(--secondary-color);">
+                <div class="icon-container">
+                    <i class="material-icons">water</i>
+                </div>
+                <h3>Arrecifes Rocosos</h3>
+                <p>Datos de monitoreo y estudios sobre los ecosistemas de arrecifes rocosos en el Parque Nacional Revillagigedo.</p>
+                <a href="https://datalake-cbmc-revillagigedo.s3.amazonaws.com/revillagigedo_dashboard/rocky_reefs_monitoring_report_es.html" 
+                target="_blank" class="bio-button">Ver informe <i class="material-icons">arrow_forward</i></a>
+            </div>
+            <div class="bio-card" style="--card-color: #00a0c8;">
+                <div class="icon-container">
+                    <i class="material-icons">pets</i>
+                </div>
+                <h3>Tortugas Marinas</h3>
+                <p>Investigaciones y datos de monitoreo sobre las poblaciones de tortugas marinas en el archipiélago.</p>
+                <a href="https://datalake-cbmc-revillagigedo.s3.amazonaws.com/revillagigedo_dashboard/Informe_Tortugas_PNR_2022.pdf" 
+                target="_blank" class="bio-button">Ver informe <i class="material-icons">arrow_forward</i></a>
+            </div>
+            <div class="bio-card" style="--card-color: #3caa36;">
+                <div class="icon-container">
+                    <i class="material-icons">waves</i>
+                </div>
+                <h3>Mamíferos Marinos</h3>
+                <p>Estudios y datos sobre las especies de mamíferos marinos que habitan en las aguas del Parque Nacional.</p>
+                <a href="https://datalake-cbmc-revillagigedo.s3.amazonaws.com/revillagigedo_dashboard/mamiferos_marinos.pdf" 
+                target="_blank" class="bio-button">Ver informe <i class="material-icons">arrow_forward</i></a>
+            </div>
+        </div>
+    </div>
+    <div id="expedition" class="content">
+        <div class="landing-background">
+            <h1>Informe de Expedición</h1>
+        </div>
+        <h2 class="section-title">Expediciones Científicas</h2>
+        <div class="card-container">
+            <div class="bio-card" style="--card-color: var(--secondary-color);">
+                <div class="icon-container">
+                    <i class="material-icons">travel_explore</i>
+                </div>
+                <h3>Expedición 2023</h3>
+                <p>Informe completo de la expedición científica realizada en 2023 en el Parque Nacional Revillagigedo, con hallazgos y recomendaciones.</p>
+                <a href="https://datalake-cbmc-revillagigedo.s3.us-east-1.amazonaws.com/revillagigedo_dashboard/Revillagigedo+Reporte+Tecnico.pdf" 
+                target="_blank" class="cta-button">
+                    <i class="material-icons">download</i> Descargar Informe
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="research" class="content">
+        <div class="landing-background">
+            <h1></h1>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px;">
+            <iframe src="https://docs.google.com/spreadsheets/d/1hHpilcl1OB417mQp5hLs-qkWeIiq6b5aj-jMS4ZzM7Y/edit?usp=sharing" style="width: 100%; height: 80vh; border: none;"></iframe>
+        </div>
+    </div>
+
+    <div id="book" class="content">
+        <div class="landing-background">
+            <h1>Libro Área Marina de Revillagigedo</h1>
+        </div>
+        
+        <section class="book-section">
+            <div class="book-container">
+                <div class="book-cover">
+                    <img src="www/Cover.jpg" alt="Portada del libro sobre el área marina de Revillagigedo" class="book-image">
+                </div>
+                
+                <div class="book-info">
+                    <h2 class="book-title">Área Marina del Parque Nacional Revillagigedo</h2>
+                    <p class="book-subtitle">Pasado, Presente y Futuro de la Investigación Marina</p>
+                    
+                    <p class="book-description">
+                        Descubre la biodiversidad y las maravillas del Parque Nacional Revillagigedo a través de este completo libro de investigación. Una obra esencial para conocer en profundidad este extraordinario ecosistema marino protegido.
+                    </p>
+                    
+                    <a href="https://escholarship.org/uc/item/9ms1388x" target="_blank" class="cta-button book-download-btn">
+                        <i class="material-icons">cloud_download</i> Descargar libro completo
+                    </a>
+                </div>
+            </div>
+            
+            <script async
+              src="https://nzs3hxmmklbc5rsacvsdeopj.agents.do-ai.run/static/chatbot/widget.js"
+              data-agent-id="8e06eb73-5d9b-11f0-bf8f-4e013e2ddde4"
+              data-chatbot-id="Jl4qcos732h05W9X775MYYSzuPrXL4SA"
+              data-name="revillagigedo-chatbot Chatbot"
+              data-primary-color="#031B4E"
+              data-secondary-color="#E5E8ED"
+              data-button-background-color="#0061EB"
+              data-starting-message="Hola! Que quieres saber sobre Revillagigedo?"
+              data-logo="/static/chatbot/icons/default-agent.svg">
+            </script>
+            
+            <div class="info-card podcast-card">
+                <div class="podcast-header">
+                    <i class="material-icons podcast-icon">headset</i>
+                    <h2>Podcast sobre el libro</h2>
+                </div>
+                
+                <p class="podcast-description">Escucha una presentación narrada de los principales hallazgos y conclusiones del libro, generada con tecnología de IA.</p>
+                
+                <div class="language-selector">
+                    <button id="spanish-btn" class="language-btn active" onclick="changeLanguage('spanish')"><i class="material-icons">language</i> Español</button>
+                    <button id="english-btn" class="language-btn" onclick="changeLanguage('english')"><i class="material-icons">language</i> English</button>
+                </div>
+                
+                <div id="spanish-audio" class="audio-container active-audio">
+                    <audio controls class="podcast-audio">
+                        <source src="www/audio/book_audio_optimized_esp.wav" type="audio/wav">
+                        <source src="www/audio/book_audio_optimized.mp3" type="audio/mpeg">
+                        Tu navegador no soporta el elemento de audio.
+                    </audio>
+                    <p class="audio-info">
+                        <span><i class="material-icons">timer</i> 33:21</span>
+                        <span><i class="material-icons">language</i> Español</span>
+                        <span><i class="material-icons">save</i> 23MB</span>
+                    </p>
+                </div>
+                
+                <div id="english-audio" class="audio-container">
+                    <audio controls class="podcast-audio">
+                        <source src="www/audio/book_audio_optimized.mp3" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <p class="audio-info">
+                        <span><i class="material-icons">timer</i> 33:21</span>
+                        <span><i class="material-icons">language</i> English</span>
+                        <span><i class="material-icons">save</i> 23MB</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="info-card references-card">
+                <div class="podcast-header">
+                    <i class="material-icons podcast-icon">menu_book</i>
+                    <h2>Referencias por Capítulo</h2>
+                </div>
+                <p class="podcast-description">El libro contiene numerosas referencias bibliográficas que respaldan la investigación y los hallazgos presentados en cada capítulo.</p>
+                
+                <div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 1:</strong> Rodríguez de la Peña, A., Carey, S., Siebe, C., &amp; Salgado Castrejón, M. (2025). Origen volcánico y características geológicas. <a href="https://escholarship.org/uc/item/74c216c5" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 2:</strong> Favoretto, F., et al. (2025). Aspectos oceanográficos y cambios climáticos. <a href="https://escholarship.org/uc/item/89c5v5rb" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 3:</strong> Ramírez Zúñiga, M. A., et al. (2025). Arrecifes rocosos. <a href="https://escholarship.org/uc/item/3wp552dt" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 4:</strong> Carone, E., et al. (2025). Una visión general de las especies de Mamíferos Marinos. <a href="https://escholarship.org/uc/item/05r0m004" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 5:</strong> Carone, E., et al. (2025). Megafauna en Revillagigedo: investigación, riesgos y rumbo futuro. <a href="https://escholarship.org/uc/item/7rd5x6zd" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 6:</strong> Carone, E., et al. (2025). Condrictios: Perspectivas ecológicas y de conservación. <a href="https://escholarship.org/uc/item/4z4572fs" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 7:</strong> Fernández-Sanz, H., et al. (2025). Perspectivas actuales sobre la ecología de las tortugas marinas. <a href="https://escholarship.org/uc/item/90d68887" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                    <div class="reference-item">
+                        <p><strong>Capítulo 8:</strong> Soldatini, C., et al. (2025). Aves marinas y costeras. <a href="https://escholarship.org/uc/item/1qd619mv" target="_blank">Ver capítulo <i class="material-icons" style="font-size: 16px">arrow_forward</i></a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        function showContent(id) {
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(id).classList.add('active');
+        }
+        
+        function changeLanguage(language) {
+            // Pause all audio elements first
+            document.querySelectorAll('audio').forEach(audio => {
+                audio.pause();
+            });
+            
+            // Update button states
+            document.getElementById('spanish-btn').classList.remove('active');
+            document.getElementById('english-btn').classList.remove('active');
+            document.getElementById(language + '-btn').classList.add('active');
+            
+            // Hide all audio containers
+            document.querySelectorAll('.audio-container').forEach(container => {
+                container.classList.remove('active-audio');
+            });
+            
+            // Show selected language audio container
+            document.getElementById(language + '-audio').classList.add('active-audio');
+        }
+
+        console.log("Initializing the map...");
+
+        // Initialize Leaflet map
+        const map = L.map('map').setView([18.8, -113], 6);
+        console.log("Map initialized with view set to [18.8, -113] and zoom level 6.");
+
+        L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri',
+            maxZoom: 16
+        }).addTo(map);
+        console.log("National Geographic tile layer added to the map.");
+
+        // Load GeoJSON for the Revillagigedo protected area
+        fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+    const testGeoJSON = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "NOMBRE": "Revillagigedo",
+        "CAT_DECRET": "PN",
+        "ESTADOS": "S/E",
+        "MUNICIPIOS": "S/M",
+        "REGION": "Península de Baja California y Pacífico Norte"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-115.4714, 18.583],
+            [-115.4714, 17.6552],
+            [-114.517, 17.6552],
+            [-112.2941, 17.6552],
+            [-110.0781, 17.6552],
+            [-110.0781, 20.0086],
+            [-115.4714, 20.0086],
+            [-115.4714, 18.583]
+          ]
+        ]
+      }
+    }
+  ]
+};
+
+// Add GeoJSON to map
+L.geoJSON(testGeoJSON, {
+  style: {
+    color: "#FF5733",
+    weight: 2,
+    fillOpacity: 0.4
+  }
+}).addTo(map);
+map.fitBounds(L.geoJSON(testGeoJSON).getBounds());
+
+    </script>
+</body>
+</html>

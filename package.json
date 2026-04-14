@@ -1,0 +1,9 @@
+{
+  "name": "revillagigedo-dashboard",
+  "version": "1.0.0",
+  "scripts": {
+    "prebuild": "node fetch-report.js",
+    "build": "echo 'No additional build steps required'"
+  },
+  "dependencies": {}
+}
