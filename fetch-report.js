@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Replace with the actual S3 URL for your report
-const reportUrl = 'https://datalake-cbmc-revillagigedo.s3.amazonaws.com/revillagigedo_dashboard/revillagigedo_report_es.html'; 
+const reportUrl = 'https://revillagigedo-dashboard.s3.us-east-1.amazonaws.com/revillagigedo_dashboard/revillagigedo_report_es.html';
 const outputDir = path.join(__dirname, 'static', 'reports');
 const outputFile = path.join(outputDir, 'revillagigedo_report_es.html');
 
